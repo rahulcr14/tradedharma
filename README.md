@@ -1,60 +1,158 @@
 # TradeDharma
 
-**Trade. Reflect. Improve.**
+<p align="center">
+  <img src="docs/images/tradedharma-logo.png" alt="TradeDharma logo" width="220">
+</p>
 
-TradeDharma is an offline-first personal trade journal and performance analytics app for Android. It records trades, calculates P&L, stores notes/screenshots, and provides review/analytics tools. It does **not** execute trades, connect to brokers, provide trading signals, or provide financial advice.
+<p align="center"><strong>Trade. Reflect. Improve.</strong></p>
 
-## Final feature set
+TradeDharma is an offline-first Android trade journal and performance analytics
+app designed to help traders record, review and understand their own trading
+performance.
 
+It supports manual trade journaling, P&L calculation, trade history, notes,
+screenshots, reviews, analytics, CSV/JSON import and export, and offline-first
+local storage.
+
+<p>
+  <a href="https://github.com/rahulcr14/tradedharma/releases/latest/download/TradeDharma.apk">
+    <img src="https://img.shields.io/badge/Download-APK-2196F3?style=for-the-badge&logo=android&logoColor=white" alt="Download TradeDharma APK">
+  </a>
+</p>
+
+**Android APK. Download and install the latest release directly on your Android device.**
+
+[View all releases](https://github.com/rahulcr14/tradedharma/releases)
+
+## Features
+
+- Offline-first trade journal backed by a local Room database
 - Options, Futures, Equity and Other trade records
 - NIFTY, BANK NIFTY and SENSEX default symbols
 - NSE and BSE default exchanges
-- Searchable symbol/exchange/lot-size selectors
-- Custom symbols, exchanges and lot sizes persisted locally
-- Protected default catalog entries; custom entries can be deleted without deleting historical trades
-- Options strike + expiry calendar
-- Lot size × lots quantity calculation
-- Editable Entry, Exit, Stop Loss, Target and Charges fields
+- Searchable symbol, exchange and lot-size selectors
+- Custom symbols, exchanges and lot sizes
+- Options strike and expiry calendar
+- Lot size x lots quantity calculation
+- Entry, Exit, Stop Loss, Target and Charges fields
 - Buy/Sell and Call/Put controls
-- Live gross/net P&L preview
-- Trade history, details, edit and delete
-- Daily and weekly review
-- Analytics including gross P&L, net P&L and profit factor
-- CSV and JSON import/export
-- Screenshot attachments
-- Light, neutral Dark and pure-black AMOLED Black modes
-- Floating modern navigation dock: active destination expands to icon + label; inactive destinations remain icon-only
-- Offline-first Room database with non-destructive catalog migration
+- Live gross and net P&L preview
+- Trade history with edit and delete
+- Daily and weekly reviews
+- Performance analytics including gross P&L, net P&L and profit factor
+- CSV import/export and JSON backup/restore
+- Screenshot attachments stored locally
+- Light, Dark and AMOLED Black modes
+- Floating navigation dock with animated active destinations
 
-## Known P&L regression
+## P&L regression
 
-NIFTY 24000 PE, Buy 65, Entry 109.55, Exit 151.40, Charges 76.47:
+This regression example is used to validate the P&L calculation:
 
-- Gross P&L: ₹2,720.25
-- Net P&L: ₹2,643.78
+| Input | Value |
+| --- | ---: |
+| Instrument | NIFTY 24000 PE |
+| Direction | Buy |
+| Quantity | 65 |
+| Entry | 109.55 |
+| Exit | 151.40 |
+| Charges | INR 76.47 |
+| Gross P&L | INR 2,720.25 |
+| Net P&L | INR 2,643.78 |
 
-## Build
+## Tech stack
 
-Requirements:
-- JDK 21
+- Kotlin
+- Jetpack Compose and Material 3
+- Android Navigation Compose
+- Room and Room KSP compiler
+- Kotlin coroutines
+- Gradle 9.7.0
+- Android Gradle Plugin 9.4.0
 - Android SDK 37
-- Android Studio with Android Gradle Plugin 9.4.0 support
 
-The repository includes a small Gradle bootstrap script (`gradlew`) that downloads Gradle 9.6.0 if a local Gradle installation is not available.
+## Requirements
+
+- JDK 21
+- Android SDK Platform 37 and Android build tools
+- Android Studio with support for Android Gradle Plugin 9.4.0
+
+The repository wrapper bootstraps Gradle 9.7.0 when a system Gradle installation
+is not available.
+
+## Build from source
 
 ```bash
+git clone https://github.com/rahulcr14/tradedharma.git
+cd tradedharma
+
 ./gradlew test
 ./gradlew assembleDebug
 ```
 
-APK output:
+The debug APK is generated at:
 
-`app/build/outputs/apk/debug/app-debug.apk`
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
 
-## GitHub Actions
+## Testing and CI
 
-Pushing to `main` runs unit tests and builds the debug APK. The APK is uploaded as the `TradeDharma-debug-apk` workflow artifact.
+Run the unit tests with:
 
-## Privacy / scope
+```bash
+./gradlew test
+```
 
-TradeDharma stores journal data locally until the user explicitly exports it. It is a recording and analytics tool, not an investment-advice or trade-execution product.
+Build the debug APK with:
+
+```bash
+./gradlew assembleDebug
+```
+
+Pushes to `main` and pull requests run tests and build the debug APK in GitHub
+Actions. CI may upload the APK as a development artifact. Public downloads are
+published separately through GitHub Releases.
+
+Pushing a version tag such as `v0.1.0` runs the release workflow, tests the
+project, builds the APK, renames it to `TradeDharma.apk`, and attaches it to a
+GitHub Release.
+
+## Project structure
+
+```text
+tradedharma/
+├── app/
+│   ├── schemas/
+│   └── src/
+├── docs/
+│   └── images/
+├── .github/
+│   └── workflows/
+├── README.md
+├── CHANGELOG.md
+├── FINAL_CHECKS.md
+├── docs.md
+├── build.gradle.kts
+├── settings.gradle.kts
+├── gradlew
+└── gradlew.bat
+```
+
+## Privacy
+
+TradeDharma is offline-first and stores journal data locally unless the user
+explicitly exports it. The project does not require a broker connection or
+cloud account for its journal workflows.
+
+## Disclaimer
+
+TradeDharma is a personal trade-recording and performance analytics tool. It
+does not provide investment, trading, or financial advice and does not execute
+trades.
+
+## License
+
+No license file has been added yet. Until a license is selected and committed,
+the repository should not be assumed to grant reuse rights. MIT is a reasonable
+candidate for this project and should be added after maintainer approval.

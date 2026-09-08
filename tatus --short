@@ -1,0 +1,361 @@
+[1mdiff --git a/CHANGELOG.md b/CHANGELOG.md[m
+[1mindex e77ca72..a2b0036 100644[m
+[1m--- a/CHANGELOG.md[m
+[1m+++ b/CHANGELOG.md[m
+[36m@@ -1,16 +1,21 @@[m
+ # Changelog[m
+ [m
+[31m-## TradeDharma final build[m
+[32m+[m[32m## [0.1.0] - First public release[m
+ [m
+[31m-- Reworked Add Trade controls around dedicated selector surfaces and direct editable text fields.[m
+[31m-- Added reliable searchable symbol, exchange and lot-size selectors.[m
+[31m-- Preserved NIFTY, BANK NIFTY and SENSEX defaults.[m
+[31m-- Preserved NSE and BSE defaults.[m
+[31m-- Added protected default catalogs and deletable custom catalog entries.[m
+[31m-- Added persisted Light / Dark / AMOLED Black appearance selection.[m
+[31m-- Replaced green-tinted dark palette with neutral charcoal.[m
+[31m-- Added modern floating navigation dock with animated active-label expansion.[m
+[31m-- Preserved non-destructive Room migration and historical trades.[m
+[31m-- Preserved P&L logic and expanded regression coverage.[m
+[31m-- Corrected gross analytics to use gross P&L.[m
+[31m-- Corrected weekly review range and transactional import from the audited build.[m
+[32m+[m[32m### Added[m
+[32m+[m
+[32m+[m[32m- Offline-first manual trade journaling with local Room storage.[m
+[32m+[m[32m- Options, Futures, Equity and Other trade records.[m
+[32m+[m[32m- Default NIFTY, BANK NIFTY, SENSEX, NSE and BSE catalogs.[m
+[32m+[m[32m- Searchable and customizable symbols, exchanges and lot sizes.[m
+[32m+[m[32m- Options strike, expiry, lot-size and quantity workflows.[m
+[32m+[m[32m- Entry, Exit, Stop Loss, Target, Charges, Buy/Sell and Call/Put fields.[m
+[32m+[m[32m- Live gross and net P&L preview with regression-tested calculations.[m
+[32m+[m[32m- Trade history with details, editing and deletion.[m
+[32m+[m[32m- Daily and weekly reviews.[m
+[32m+[m[32m- Performance analytics for P&L, profit factor, drawdown, expectancy and tags.[m
+[32m+[m[32m- CSV import/export and JSON backup/restore.[m
+[32m+[m[32m- Device-local chart screenshot attachments.[m
+[32m+[m[32m- Light, Dark and AMOLED Black themes.[m
+[32m+[m[32m- Floating navigation dock with animated active destinations.[m
+[32m+[m[32m- GitHub Actions test/build CI and tag-driven APK release automation.[m
+[1mdiff --git a/FINAL_CHECKS.md b/FINAL_CHECKS.md[m
+[1mindex 5f52330..a991374 100644[m
+[1m--- a/FINAL_CHECKS.md[m
+[1m+++ b/FINAL_CHECKS.md[m
+[36m@@ -1,22 +1,23 @@[m
+ # Final source-package checks[m
+ [m
+[31m-This source package was rebuilt around the final requested UX and feature set.[m
+[32m+[m[32mThis repository is prepared for the TradeDharma v0.1.0 public release.[m
+ [m
+[31m-## Static checks completed[m
+[32m+[m[32m## Verified[m
+ [m
+[31m-- XML resources parse successfully.[m
+[31m-- Kotlin source has balanced braces.[m
+[31m-- Kotlin compiler frontend reports no syntax-like errors; Android/Compose dependency resolution is intentionally not available in this packaging environment.[m
+[31m-- No duplicate test class remains.[m
+[31m-- No `com.tradelog.app` references remain.[m
+[31m-- No MCX or NCDEX exchange defaults remain.[m
+[31m-- No `fallbackToDestructiveMigration()` remains.[m
+[31m-- No trailing whitespace was found in source/config/docs files.[m
+[31m-- Known NIFTY P&L calculation independently rechecked: gross ₹2,720.25; net ₹2,643.78.[m
+[31m-- GitHub Actions is configured to install Android SDK 37, run unit tests, assemble the debug APK, and upload the APK artifact.[m
+[32m+[m[32m- `./gradlew test` passes locally.[m
+[32m+[m[32m- `./gradlew assembleDebug` produces `app/build/outputs/apk/debug/app-debug.apk`.[m
+[32m+[m[32m- The generated APK application ID is `com.tradedharma.app`.[m
+[32m+[m[32m- The NIFTY P&L regression remains gross INR 2,720.25 and net INR 2,643.78.[m
+[32m+[m[32m- No `fallbackToDestructiveMigration()` usage exists.[m
+[32m+[m[32m- The existing Room 2-to-3 migration remains non-destructive.[m
+[32m+[m[32m- No duplicate test class or legacy `com.tradelog.app` reference remains.[m
+[32m+[m[32m- GitHub Actions runs tests and builds the debug APK on pushes to `main` and pull requests.[m
+[32m+[m[32m- Version tags such as `v0.1.0` build and attach `TradeDharma.apk` to a GitHub Release.[m
+[32m+[m[32m- Build outputs, local configuration, signing files and secrets are ignored by Git.[m
+ [m
+[31m-## Runtime/build limitation[m
+[32m+[m[32m## Release notes[m
+ [m
+[31m-A full Android Gradle build and physical-device UI test could not be executed in this packaging environment because the Android Gradle toolchain/distribution is not locally available here and no Android device/emulator is attached. The repository therefore deliberately does not claim a runtime PASS from this environment.[m
+[31m-[m
+[31m-After uploading to GitHub, the included workflow performs the real Gradle test/build on GitHub Actions. The first local build can also be run with `./gradlew test` and `./gradlew assembleDebug`; the included bootstrap script downloads Gradle 9.6.0 when needed.[m
+[32m+[m[32m- Current application version: `0.1.0` (`versionCode = 1`).[m
+[32m+[m[32m- Recommended first tag: `v0.1.0`.[m
+[32m+[m[32m- A `LICENSE` file is still intentionally absent pending maintainer approval; MIT is a reasonable candidate.[m
+[32m+[m[32m- Physical-device UI validation is not part of the automated unit/build checks and should be completed before publishing.[m
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 51a47c1..127cf43 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -1,60 +1,158 @@[m
+ # TradeDharma[m
+ [m
+[31m-**Trade. Reflect. Improve.**[m
+[32m+[m[32m<p align="center">[m
+[32m+[m[32m  <img src="docs/images/tradedharma-logo.png" alt="TradeDharma logo" width="220">[m
+[32m+[m[32m</p>[m
+ [m
+[31m-TradeDharma is an offline-first personal trade journal and performance analytics app for Android. It records trades, calculates P&L, stores notes/screenshots, and provides review/analytics tools. It does **not** execute trades, connect to brokers, provide trading signals, or provide financial advice.[m
+[32m+[m[32m<p align="center"><strong>Trade. Reflect. Improve.</strong></p>[m
+ [m
+[31m-## Final feature set[m
+[32m+[m[32mTradeDharma is an offline-first Android trade journal and performance analytics[m
+[32m+[m[32mapp designed to help traders record, review and understand their own trading[m
+[32m+[m[32mperformance.[m
+ [m
+[32m+[m[32mIt supports manual trade journaling, P&L calculation, trade history, notes,[m
+[32m+[m[32mscreenshots, reviews, analytics, CSV/JSON import and export, and offline-first[m
+[32m+[m[32mlocal storage.[m
+[32m+[m
+[32m+[m[32m<p>[m
+[32m+[m[32m  <a href="https://github.com/rahulcr14/tradedharma/releases/latest/download/TradeDharma.apk">[m
+[32m+[m[32m    <img src="https://img.shields.io/badge/Download-APK-2196F3?style=for-the-badge&logo=android&logoColor=white" alt="Download TradeDharma APK">[m
+[32m+[m[32m  </a>[m
+[32m+[m[32m</p>[m
+[32m+[m
+[32m+[m[32m**Android APK. Download and install the latest release directly on your Android device.**[m
+[32m+[m
+[32m+[m[32m[View all releases](https://github.com/rahulcr14/tradedharma/releases)[m
+[32m+[m
+[32m+[m[32m## Features[m
+[32m+[m
+[32m+[m[32m- Offline-first trade journal backed by a local Room database[m
+ - Options, Futures, Equity and Other trade records[m
+ - NIFTY, BANK NIFTY and SENSEX default symbols[m
+ - NSE and BSE default exchanges[m
+[31m-- Searchable symbol/exchange/lot-size selectors[m
+[31m-- Custom symbols, exchanges and lot sizes persisted locally[m
+[31m-- Protected default catalog entries; custom entries can be deleted without deleting historical trades[m
+[31m-- Options strike + expiry calendar[m
+[31m-- Lot size × lots quantity calculation[m
+[31m-- Editable Entry, Exit, Stop Loss, Target and Charges fields[m
+[32m+[m[32m- Searchable symbol, exchange and lot-size selectors[m
+[32m+[m[32m- Custom symbols, exchanges and lot sizes[m
+[32m+[m[32m- Options strike and expiry calendar[m
+[32m+[m[32m- Lot size x lots quantity calculation[m
+[32m+[m[32m- Entry, Exit, Stop Loss, Target and Charges fields[m
+ - Buy/Sell and Call/Put controls[m
+[31m-- Live gross/net P&L preview[m
+[31m-- Trade history, details, edit and delete[m
+[31m-- Daily and weekly review[m
+[31m-- Analytics including gross P&L, net P&L and profit factor[m
+[31m-- CSV and JSON import/export[m
+[31m-- Screenshot attachments[m
+[31m-- Light, neutral Dark and pure-black AMOLED Black modes[m
+[31m-- Floating modern navigation dock: active destination expands to icon + label; inactive destinations remain icon-only[m
+[31m-- Offline-first Room database with non-destructive catalog migration[m
+[32m+[m[32m- Live gross and net P&L preview[m
+[32m+[m[32m- Trade history with edit and delete[m
+[32m+[m[32m- Daily and weekly reviews[m
+[32m+[m[32m- Performance analytics including gross P&L, net P&L and profit factor[m
+[32m+[m[32m- CSV import/export and JSON backup/restore[m
+[32m+[m[32m- Screenshot attachments stored locally[m
+[32m+[m[32m- Light, Dark and AMOLED Black modes[m
+[32m+[m[32m- Floating navigation dock with animated active destinations[m
+[32m+[m
+[32m+[m[32m## P&L regression[m
+[32m+[m
+[32m+[m[32mThis regression example is used to validate the P&L calculation:[m
+[32m+[m
+[32m+[m[32m| Input | Value |[m
+[32m+[m[32m| --- | ---: |[m
+[32m+[m[32m| Instrument | NIFTY 24000 PE |[m
+[32m+[m[32m| Direction | Buy |[m
+[32m+[m[32m| Quantity | 65 |[m
+[32m+[m[32m| Entry | 109.55 |[m
+[32m+[m[32m| Exit | 151.40 |[m
+[32m+[m[32m| Charges | INR 76.47 |[m
+[32m+[m[32m| Gross P&L | INR 2,720.25 |[m
+[32m+[m[32m| Net P&L | INR 2,643.78 |[m
+[32m+[m
+[32m+[m[32m## Tech stack[m
+[32m+[m
+[32m+[m[32m- Kotlin[m
+[32m+[m[32m- Jetpack Compose and Material 3[m
+[32m+[m[32m- Android Navigation Compose[m
+[32m+[m[32m- Room and Room KSP compiler[m
+[32m+[m[32m- Kotlin coroutines[m
+[32m+[m[32m- Gradle 9.7.0[m
+[32m+[m[32m- Android Gradle Plugin 9.4.0[m
+[32m+[m[32m- Android SDK 37[m
+ [m
+[31m-## Known P&L regression[m
+[32m+[m[32m## Requirements[m
+ [m
+[31m-NIFTY 24000 PE, Buy 65, Entry 109.55, Exit 151.40, Charges 76.47:[m
+[32m+[m[32m- JDK 21[m
+[32m+[m[32m- Android SDK Platform 37 and Android build tools[m
+[32m+[m[32m- Android Studio with support for Android Gradle Plugin 9.4.0[m
+ [m
+[31m-- Gross P&L: ₹2,720.25[m
+[31m-- Net P&L: ₹2,643.78[m
+[32m+[m[32mThe repository wrapper bootstraps Gradle 9.7.0 when a system Gradle installation[m
+[32m+[m[32mis not available.[m
+ [m
+[31m-## Build[m
+[32m+[m[32m## Build from source[m
+ [m
+[31m-Requirements:[m
+[31m-- JDK 21[m
+[31m-- Android SDK 37[m
+[31m-- Android Studio with Android Gradle Plugin 9.4.0 support[m
+[32m+[m[32m```bash[m
+[32m+[m[32mgit clone https://github.com/rahulcr14/tradedharma.git[m
+[32m+[m[32mcd tradedharma[m
+[32m+[m
+[32m+[m[32m./gradlew test[m
+[32m+[m[32m./gradlew assembleDebug[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mThe debug APK is generated at:[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mapp/build/outputs/apk/debug/app-debug.apk[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## Testing and CI[m
+ [m
+[31m-The repository includes a small Gradle bootstrap script (`gradlew`) that downloads Gradle 9.6.0 if a local Gradle installation is not available.[m
+[32m+[m[32mRun the unit tests with:[m
+ [m
+ ```bash[m
+ ./gradlew test[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32mBuild the debug APK with:[m
+[32m+[m
+[32m+[m[32m```bash[m
+ ./gradlew assembleDebug[m
+ ```[m
+ [m
+[31m-APK output:[m
+[32m+[m[32mPushes to `main` and pull requests run tests and build the debug APK in GitHub[m
+[32m+[m[32mActions. CI may upload the APK as a development artifact. Public downloads are[m
+[32m+[m[32mpublished separately through GitHub Releases.[m
+[32m+[m
+[32m+[m[32mPushing a version tag such as `v0.1.0` runs the release workflow, tests the[m
+[32m+[m[32mproject, builds the APK, renames it to `TradeDharma.apk`, and attaches it to a[m
+[32m+[m[32mGitHub Release.[m
+[32m+[m
+[32m+[m[32m## Project structure[m
+[32m+[m
+[32m+[m[32m```text[m
+[32m+[m[32mtradedharma/[m
+[32m+[m[32m├── app/[m
+[32m+[m[32m│   ├── schemas/[m
+[32m+[m[32m│   └── src/[m
+[32m+[m[32m├── docs/[m
+[32m+[m[32m│   └── images/[m
+[32m+[m[32m├── .github/[m
+[32m+[m[32m│   └── workflows/[m
+[32m+[m[32m├── README.md[m
+[32m+[m[32m├── CHANGELOG.md[m
+[32m+[m[32m├── FINAL_CHECKS.md[m
+[32m+[m[32m├── docs.md[m
+[32m+[m[32m├── build.gradle.kts[m
+[32m+[m[32m├── settings.gradle.kts[m
+[32m+[m[32m├── gradlew[m
+[32m+[m[32m└── gradlew.bat[m
+[32m+[m[32m```[m
+[32m+[m
+[32m+[m[32m## Privacy[m
+ [m
+[31m-`app/build/outputs/apk/debug/app-debug.apk`[m
+[32m+[m[32mTradeDharma is offline-first and stores journal data locally unless the user[m
+[32m+[m[32mexplicitly exports it. The project does not require a broker connection or[m
+[32m+[m[32mcloud account for its journal workflows.[m
+ [m
+[31m-## GitHub Actions[m
+[32m+[m[32m## Disclaimer[m
+ [m
+[31m-Pushing to `main` runs unit tests and builds the debug APK. The APK is uploaded as the `TradeDharma-debug-apk` workflow artifact.[m
+[32m+[m[32mTradeDharma is a personal trade-recording and performance analytics tool. It[m
+[32m+[m[32mdoes not provide investment, trading, or financial advice and does not execute[m
+[32m+[m[32mtrades.[m
+ [m
+[31m-## Privacy / scope[m
+[32m+[m[32m## License[m
+ [m
+[31m-TradeDharma stores journal data locally until the user explicitly exports it. It is a recording and analytics tool, not an investment-advice or trade-execution product.[m
+[32m+[m[32mNo license file has been added yet. Until a license is selected and committed,[m
+[32m+[m[32mthe repository should not be assumed to grant reuse rights. MIT is a reasonable[m
+[32m+[m[32mcandidate for this project and should be added after maintainer approval.[m
+[1mdiff --git a/docs.md b/docs.md[m
+[1mindex 03d90fb..b6ba82f 100644[m
+[1m--- a/docs.md[m
+[1m+++ b/docs.md[m
+[36m@@ -1,36 +1,33 @@[m
+[31m-# TradeDharma V0.1 implementation status[m
+[32m+[m[32m# TradeDharma v0.1.0 implementation notes[m
+ [m
+ ## Implemented[m
+ [m
+[31m-- Offline Room database with trade + review tables[m
+[31m-- CRUD for trades[m
+[31m-- Equity, futures, options and other instruments[m
+[31m-- Buy/sell P&L, charges, risk, reward, planned R:R and actual R multiple[m
+[31m-- Add/edit trade form with validation[m
+[31m-- Search + instrument filtering[m
+[31m-- Dashboard KPIs + equity curve + win/loss distribution[m
+[31m-- Insights for strategy, instrument, time of day and tags[m
+[31m-- Chart screenshot attachment stored in app-internal storage[m
+[31m-- Daily/weekly review forms[m
+[31m-- CSV/JSON export and CSV/JSON import[m
+[31m-- Dark/light/system themes[m
+[31m-- Material 3 UI[m
+[31m-- Basic unit tests[m
+[31m-- GitHub Actions workflow[m
+[32m+[m[32m- Offline Room database with trade, review and saved catalog tables.[m
+[32m+[m[32m- Non-destructive Room migration from version 2 to version 3.[m
+[32m+[m[32m- CRUD for trades, including options, futures, equity and other instruments.[m
+[32m+[m[32m- Buy/sell P&L, charges, risk, reward, planned R:R and actual R multiple.[m
+[32m+[m[32m- Add/edit trade form with validation and screenshot attachments.[m
+[32m+[m[32m- Search and instrument filtering.[m
+[32m+[m[32m- Dashboard KPIs, equity curve and win/loss distribution.[m
+[32m+[m[32m- Insights for strategy, instrument, time of day and tags.[m
+[32m+[m[32m- Daily and weekly review forms.[m
+[32m+[m[32m- CSV/JSON export and CSV/JSON import.[m
+[32m+[m[32m- Persisted system, light, dark and AMOLED Black themes.[m
+[32m+[m[32m- Material 3 UI with floating navigation dock and safe system-bar insets.[m
+[32m+[m[32m- Unit tests for analytics and P&L calculations.[m
+[32m+[m[32m- GitHub Actions CI and tag-driven APK release workflow.[m
+ [m
+[31m-## Known V0.1 constraints[m
+[32m+[m[32m## Known constraints[m
+ [m
+[31m-- Historical trade date/time entry is not yet exposed in the form; new/manual trades use the current timestamp.[m
+[32m+[m[32m- Historical trade date/time entry is not exposed in the form; new/manual trades use the current timestamp.[m
+ - CSV import expects the TradeDharma export column names.[m
+[31m-- Screenshots are device-local paths and should be re-attached when moving backups to another device.[m
+[31m-- No cloud sync, broker APIs, live prices, signals or AI.[m
+[31m-- APK compilation was not executed in this environment because Android SDK/Gradle artifacts were unavailable offline.[m
+[32m+[m[32m- Screenshot attachments use device-local paths and should be re-attached when moving backups to another device.[m
+[32m+[m[32m- There is no cloud sync, broker API, live pricing, trading signal, AI prediction or automated execution.[m
+[32m+[m[32m- A license has not yet been selected for the repository.[m
+ [m
+[31m-## Recommended next hardening[m
+[32m+[m[32m## Release preparation[m
+ [m
+[31m-1. Add explicit historical date + time picker to Add Trade.[m
+[31m-2. Persist theme mode with DataStore.[m
+[31m-3. Add database migration instead of destructive fallback before public release.[m
+[31m-4. Add screenshot export/import packaging for portable backups.[m
+[31m-5. Add instrument-aware option/futures lot-value validation.[m
+[31m-6. Add UI tests for the main user journey.[m
+[32m+[m[32m- Current version: `0.1.0` (`versionCode = 1`).[m
+[32m+[m[32m- Recommended tag: `v0.1.0`.[m
+[32m+[m[32m- Debug APK output: `app/build/outputs/apk/debug/app-debug.apk`.[m
+[32m+[m[32m- Public release asset name: `TradeDharma.apk`.[m
+[1mdiff --git a/gradlew b/gradlew[m
+[1mold mode 100644[m
+[1mnew mode 100755[m
+[1mindex 480a393..ed46b46[m
+[1m--- a/gradlew[m
+[1m+++ b/gradlew[m
+[36m@@ -1,7 +1,7 @@[m
+ #!/usr/bin/env sh[m
+ set -eu[m
+ [m
+[31m-GRADLE_VERSION="9.6.0"[m
+[32m+[m[32mGRADLE_VERSION="9.7.0"[m
+ GRADLE_HOME_OVERRIDE="${GRADLE_HOME_OVERRIDE:-}"[m
+ CACHE_ROOT="${GRADLE_USER_HOME:-$HOME/.gradle}/tradedharma-distributions"[m
+ INSTALL_DIR="$CACHE_ROOT/gradle-$GRADLE_VERSION"[m

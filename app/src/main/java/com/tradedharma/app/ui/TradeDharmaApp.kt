@@ -2,11 +2,11 @@ package com.tradedharma.app.ui
 
 import android.app.Activity
 import android.content.Context
-import android.graphics.Color as AndroidColor
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
@@ -62,22 +63,16 @@ fun TradeDharmaApp() {
     }
 
     val view = LocalView.current
+    val systemDark = isSystemInDarkTheme()
     SideEffect {
         val activity = view.context as? Activity
         if (activity != null) {
             val window = activity.window
-            val systemDark = isSystemInDarkTheme()
             val lightBars = themeMode == ThemeMode.LIGHT || (themeMode == ThemeMode.SYSTEM && !systemDark)
-            val barColor = when {
-                themeMode == ThemeMode.AMOLED_BLACK -> AndroidColor.BLACK
-                lightBars -> AndroidColor.rgb(247, 248, 250)
-                else -> AndroidColor.rgb(18, 20, 22)
-            }
-            window.statusBarColor = barColor
-            window.navigationBarColor = barColor
-            window.decorView.systemUiVisibility = if (lightBars) {
-                android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            } else 0
+            window.isNavigationBarContrastEnforced = false
+            val controller = WindowCompat.getInsetsController(window, view)
+            controller.isAppearanceLightStatusBars = lightBars
+            controller.isAppearanceLightNavigationBars = lightBars
         }
     }
 
@@ -113,7 +108,12 @@ private fun TradeDharmaContent(themeMode: ThemeMode, onThemeChange: (ThemeMode) 
     }
     val showMainChrome = route in mainItems.map { it.route }
 
-    Box(Modifier.fillMaxSize()) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .safeDrawingPadding()
+    ) {
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
@@ -139,7 +139,7 @@ private fun TradeDharmaContent(themeMode: ThemeMode, onThemeChange: (ThemeMode) 
                 val id = entry.arguments?.getLong("tradeId") ?: return@composable
                 TradeDetailScreen(
                     repository = repository,
-                    tradeId = id,
+                    id = id,
                     onEdit = { navController.navigate(Routes.add(id)) },
                     onBack = { navController.popBackStack() },
                     onDeleted = { navController.popBackStack() }

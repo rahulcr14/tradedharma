@@ -14,6 +14,7 @@ import com.tradedharma.app.data.local.ReviewEntity
 import com.tradedharma.app.domain.analytics.Analytics
 import com.tradedharma.app.domain.model.ReviewRating
 import com.tradedharma.app.domain.repository.TradeRepository
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,6 +30,7 @@ fun WeeklyReviewScreen(repository: TradeRepository, onBack: () -> Unit) {
     ReviewEditor(repository, "Weekly Review", onBack, true)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ReviewEditor(repository: TradeRepository, title: String, onBack: () -> Unit, weekly: Boolean) {
     val trades = repository.observeTrades().collectAsStateWithLifecycle(emptyList()).value

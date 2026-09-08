@@ -17,6 +17,7 @@ import com.tradedharma.app.data.local.TradeEntity
 import com.tradedharma.app.domain.repository.TradeRepository
 import com.tradedharma.app.ui.components.money
 import android.graphics.BitmapFactory
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.DateFormat
 import java.util.Date

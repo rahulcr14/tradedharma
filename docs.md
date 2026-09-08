@@ -1,36 +1,33 @@
-# TradeDharma V0.1 implementation status
+# TradeDharma v0.1.0 implementation notes
 
 ## Implemented
 
-- Offline Room database with trade + review tables
-- CRUD for trades
-- Equity, futures, options and other instruments
-- Buy/sell P&L, charges, risk, reward, planned R:R and actual R multiple
-- Add/edit trade form with validation
-- Search + instrument filtering
-- Dashboard KPIs + equity curve + win/loss distribution
-- Insights for strategy, instrument, time of day and tags
-- Chart screenshot attachment stored in app-internal storage
-- Daily/weekly review forms
-- CSV/JSON export and CSV/JSON import
-- Dark/light/system themes
-- Material 3 UI
-- Basic unit tests
-- GitHub Actions workflow
+- Offline Room database with trade, review and saved catalog tables.
+- Non-destructive Room migration from version 2 to version 3.
+- CRUD for trades, including options, futures, equity and other instruments.
+- Buy/sell P&L, charges, risk, reward, planned R:R and actual R multiple.
+- Add/edit trade form with validation and screenshot attachments.
+- Search and instrument filtering.
+- Dashboard KPIs, equity curve and win/loss distribution.
+- Insights for strategy, instrument, time of day and tags.
+- Daily and weekly review forms.
+- CSV/JSON export and CSV/JSON import.
+- Persisted system, light, dark and AMOLED Black themes.
+- Material 3 UI with floating navigation dock and safe system-bar insets.
+- Unit tests for analytics and P&L calculations.
+- GitHub Actions CI and tag-driven APK release workflow.
 
-## Known V0.1 constraints
+## Known constraints
 
-- Historical trade date/time entry is not yet exposed in the form; new/manual trades use the current timestamp.
+- Historical trade date/time entry is not exposed in the form; new/manual trades use the current timestamp.
 - CSV import expects the TradeDharma export column names.
-- Screenshots are device-local paths and should be re-attached when moving backups to another device.
-- No cloud sync, broker APIs, live prices, signals or AI.
-- APK compilation was not executed in this environment because Android SDK/Gradle artifacts were unavailable offline.
+- Screenshot attachments use device-local paths and should be re-attached when moving backups to another device.
+- There is no cloud sync, broker API, live pricing, trading signal, AI prediction or automated execution.
+- A license has not yet been selected for the repository.
 
-## Recommended next hardening
+## Release preparation
 
-1. Add explicit historical date + time picker to Add Trade.
-2. Persist theme mode with DataStore.
-3. Add database migration instead of destructive fallback before public release.
-4. Add screenshot export/import packaging for portable backups.
-5. Add instrument-aware option/futures lot-value validation.
-6. Add UI tests for the main user journey.
+- Current version: `0.1.0` (`versionCode = 1`).
+- Recommended tag: `v0.1.0`.
+- Debug APK output: `app/build/outputs/apk/debug/app-debug.apk`.
+- Public release asset name: `TradeDharma.apk`.

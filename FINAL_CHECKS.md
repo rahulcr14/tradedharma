@@ -1,22 +1,23 @@
 # Final source-package checks
 
-This source package was rebuilt around the final requested UX and feature set.
+This repository is prepared for the TradeDharma v0.1.0 public release.
 
-## Static checks completed
+## Verified
 
-- XML resources parse successfully.
-- Kotlin source has balanced braces.
-- Kotlin compiler frontend reports no syntax-like errors; Android/Compose dependency resolution is intentionally not available in this packaging environment.
-- No duplicate test class remains.
-- No `com.tradelog.app` references remain.
-- No MCX or NCDEX exchange defaults remain.
-- No `fallbackToDestructiveMigration()` remains.
-- No trailing whitespace was found in source/config/docs files.
-- Known NIFTY P&L calculation independently rechecked: gross ₹2,720.25; net ₹2,643.78.
-- GitHub Actions is configured to install Android SDK 37, run unit tests, assemble the debug APK, and upload the APK artifact.
+- `./gradlew test` passes locally.
+- `./gradlew assembleDebug` produces `app/build/outputs/apk/debug/app-debug.apk`.
+- The generated APK application ID is `com.tradedharma.app`.
+- The NIFTY P&L regression remains gross INR 2,720.25 and net INR 2,643.78.
+- No `fallbackToDestructiveMigration()` usage exists.
+- The existing Room 2-to-3 migration remains non-destructive.
+- No duplicate test class or legacy `com.tradelog.app` reference remains.
+- GitHub Actions runs tests and builds the debug APK on pushes to `main` and pull requests.
+- Version tags such as `v0.1.0` build and attach `TradeDharma.apk` to a GitHub Release.
+- Build outputs, local configuration, signing files and secrets are ignored by Git.
 
-## Runtime/build limitation
+## Release notes
 
-A full Android Gradle build and physical-device UI test could not be executed in this packaging environment because the Android Gradle toolchain/distribution is not locally available here and no Android device/emulator is attached. The repository therefore deliberately does not claim a runtime PASS from this environment.
-
-After uploading to GitHub, the included workflow performs the real Gradle test/build on GitHub Actions. The first local build can also be run with `./gradlew test` and `./gradlew assembleDebug`; the included bootstrap script downloads Gradle 9.6.0 when needed.
+- Current application version: `0.1.0` (`versionCode = 1`).
+- Recommended first tag: `v0.1.0`.
+- A `LICENSE` file is still intentionally absent pending maintainer approval; MIT is a reasonable candidate.
+- Physical-device UI validation is not part of the automated unit/build checks and should be completed before publishing.

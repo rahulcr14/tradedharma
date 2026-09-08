@@ -1,0 +1,32 @@
+# Gradle
+.gradle/
+build/
+app/build/
+
+# Local Android configuration
+local.properties
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+
+# Generated and local tooling files
+.externalNativeBuild/
+.cxx/
+.kotlin/
+
+# Signing material and secrets
+*.jks
+*.keystore
+*.p12
+*.pem
+keystore.properties
+secrets.properties
+
+# Release outputs are attached to GitHub Releases, not committed
+*.apk
+*.aab
+
+# OS/editor files
+.DS_Store
+Thumbs.db

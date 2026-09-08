@@ -68,7 +68,7 @@ fun AddTradeScreen(
     var loaded by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(tradeId) {
         loaded = false
-        existing = tradeId?.takeIf { it >= 0 }?.let(repository::get)
+        existing = tradeId?.takeIf { it >= 0 }?.let { repository.get(it) }
     }
 
     var instrument by rememberSaveable { mutableStateOf(InstrumentType.OPTIONS) }
@@ -441,7 +441,7 @@ fun AddTradeScreen(
 }
 
 @Composable
-private fun TwoColumn(content: RowScope.() -> Unit) {
+private fun TwoColumn(content: @Composable RowScope.() -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), content = content)
 }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 set -eu
 
-GRADLE_VERSION="9.6.0"
+GRADLE_VERSION="9.7.0"
 GRADLE_HOME_OVERRIDE="${GRADLE_HOME_OVERRIDE:-}"
 CACHE_ROOT="${GRADLE_USER_HOME:-$HOME/.gradle}/tradedharma-distributions"
 INSTALL_DIR="$CACHE_ROOT/gradle-$GRADLE_VERSION"

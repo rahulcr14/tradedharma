@@ -27,24 +27,24 @@ fun SettingsScreen(repository: TradeRepository, onDailyReview: () -> Unit, onWee
     val openAny = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> if (uri != null) scope.launch { runCatching { val text = context.contentResolver.openInputStream(uri)!!.bufferedReader().readText(); val isCsv = (context.contentResolver.getType(uri).orEmpty().contains("csv") || uri.toString().lowercase().endsWith(".csv")); val imported = if (isCsv) TradeImporter.csv(text) else TradeImporter.json(text); repository.insertTradesTransactional(imported); status = "Imported ${imported.size} trades" }.onFailure { status = "Import failed: ${it.message}" } } }
 
     Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("More", style = MaterialTheme.typography.headlineSmall)
-        Text("Data", style = MaterialTheme.typography.titleMedium)
+        Text("More", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground)
+        Text("Data", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
         Button(onClick = { createDocument.launch("tradelog-export.csv") }, Modifier.fillMaxWidth()) { Text("Export CSV") }
         Button(onClick = { createJson.launch("tradelog-backup.json") }, Modifier.fillMaxWidth()) { Text("Export JSON backup") }
         OutlinedButton(onClick = { openAny.launch(arrayOf("application/json", "text/csv", "text/comma-separated-values", "text/*")) }, Modifier.fillMaxWidth()) { Text("Import CSV / JSON backup") }
         HorizontalDivider()
-        Text("Reviews", style = MaterialTheme.typography.titleMedium)
+        Text("Reviews", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
         OutlinedButton(onClick = onDailyReview, Modifier.fillMaxWidth()) { Text("Daily review") }
         OutlinedButton(onClick = onWeeklyReview, Modifier.fillMaxWidth()) { Text("Weekly review") }
         HorizontalDivider()
-        Text("Theme", style = MaterialTheme.typography.titleMedium)
+        Text("Theme", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             ThemeMode.values().forEach { mode ->
                 FilterChip(selected = themeMode == mode, onClick = { onThemeChange(mode) }, label = { Text(mode.label()) })
             }
         }
         HorizontalDivider()
-        Text("Open Source", style = MaterialTheme.typography.titleMedium)
+        Text("Open Source", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
         Text("TradeDharma is designed as a privacy-first, offline-first open-source trading journal. Core trade data stays on the device until you export it.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         status?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
     }

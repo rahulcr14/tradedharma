@@ -24,8 +24,8 @@ fun HomeScreen(repository: TradeRepository, onAddTrade: () -> Unit) {
     val points = Analytics.equityPoints(trades)
 
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(bottom = 96.dp)) {
-        item { Text("Good morning ☀️", style = MaterialTheme.typography.headlineSmall) }
-        item { Text("Discipline today, freedom tomorrow.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        item { Text("Good morning ☀️", style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onBackground) }
+        item { Text("Discipline today, freedom tomorrow.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         if (trades.isEmpty()) {
             item { EmptyState("Start your journal", "Record your first trade to unlock P&L, equity and insights.", "Add first trade", onAddTrade) }
         } else {
@@ -79,6 +79,8 @@ fun HomeScreen(repository: TradeRepository, onAddTrade: () -> Unit) {
 @Composable
 private fun EquityCurve(points: List<Double>) {
     if (points.isEmpty()) return
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val outlineColor = MaterialTheme.colorScheme.outlineVariant
     Canvas(Modifier.fillMaxWidth().height(180.dp)) {
         val min = points.minOrNull() ?: 0.0
         val max = points.maxOrNull() ?: 0.0
@@ -89,7 +91,7 @@ private fun EquityCurve(points: List<Double>) {
             val y = size.height - ((value - min) / range).toFloat() * (size.height - 12.dp.toPx()) - 6.dp.toPx()
             if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
-        drawPath(path, color = MaterialTheme.colorScheme.primary, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f))
-        drawLine(MaterialTheme.colorScheme.outlineVariant, Offset(0f, size.height - 1), Offset(size.width, size.height - 1))
+        drawPath(path, color = primaryColor, style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4f))
+        drawLine(outlineColor, Offset(0f, size.height - 1), Offset(size.width, size.height - 1))
     }
 }

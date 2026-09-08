@@ -36,13 +36,13 @@ fun InsightsScreen(repository: TradeRepository) {
                 MetricCard("Max Drawdown", money(-Analytics.maxDrawdown(trades)), Modifier.weight(1f))
             }
         }
-        item { Text("By strategy", style = MaterialTheme.typography.titleLarge) }
+        item { Text("By strategy", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground) }
         items(strategies) { (name, summary) -> InsightRow(name, summary.count, summary.winRate, summary.netPnl) }
-        item { Text("By instrument", style = MaterialTheme.typography.titleLarge) }
+        item { Text("By instrument", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground) }
         items(instruments) { (name, summary) -> InsightRow(name.name.lowercase().replaceFirstChar { it.uppercase() }, summary.count, summary.winRate, summary.netPnl) }
-        item { Text("By time of day", style = MaterialTheme.typography.titleLarge) }
+        item { Text("By time of day", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground) }
         items(times) { (name, summary) -> InsightRow(name, summary.count, summary.winRate, summary.netPnl) }
-        item { Text("Behavior & tags", style = MaterialTheme.typography.titleLarge) }
+        item { Text("Behavior & tags", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onBackground) }
         if (tags.isEmpty()) item { Text("Add tags such as FOMO, Followed Plan, Trending or Moved SL to unlock behavioral insights.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
         items(tags.take(12)) { (name, summary) -> InsightRow(name, summary.count, summary.winRate, summary.netPnl) }
     }

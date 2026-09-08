@@ -2,6 +2,8 @@ package com.tradedharma.app.data.local
 
 import android.content.Context
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 object DatabaseProvider {
     @Volatile private var instance: TradeDatabase? = null
