@@ -26,9 +26,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-          packages: |-
-            platforms;android-37.0
-            build-tools;37.0.0
+          packages: 'platforms;android-37.0 build-tools;37.0.0'
 
       - name: Run unit tests
         run: ./gradlew test
