@@ -1,0 +1,10 @@
+<resources>
+    <style name="Theme.TradeDharma" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#121416</item>
+        <item name="android:navigationBarColor">#121416</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowSplashScreenBackground">#000000</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/tradedharma_splash_logo</item>
+    </style>
+</resources>
