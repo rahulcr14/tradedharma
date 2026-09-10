@@ -16,11 +16,16 @@ import androidx.compose.ui.unit.dp
 import com.tradedharma.app.data.local.TradeEntity
 import com.tradedharma.app.domain.repository.TradeRepository
 import com.tradedharma.app.ui.components.money
+import com.tradedharma.app.ui.components.displaySymbol
 import android.graphics.BitmapFactory
 import kotlinx.coroutines.launch
 import java.io.File
-import java.text.DateFormat
 import java.util.Date
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+private val DETAIL_DATE = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,8 +38,10 @@ fun TradeDetailScreen(repository: TradeRepository, id: Long, onEdit: () -> Unit,
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             val t = trade
             if (t == null) Text("Trade not found") else {
-                Text(t.symbol, style = MaterialTheme.typography.headlineSmall)
-                Text("${DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(t.openedAtEpochMs))} • ${t.direction.name}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(t.displaySymbol(), style = MaterialTheme.typography.headlineSmall)
+                val selectedDate = t.tradeDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                    ?: Date(t.openedAtEpochMs).toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                Text("${selectedDate.format(DETAIL_DATE)} • ${t.direction.name}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Stat("Entry", "₹%.2f".format(t.entryPrice)); Stat("Exit", "₹%.2f".format(t.exitPrice)); Stat("Qty", "%.2f".format(t.quantity))
                 }

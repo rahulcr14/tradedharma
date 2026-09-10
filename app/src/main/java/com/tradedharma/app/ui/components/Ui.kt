@@ -5,9 +5,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.tradedharma.app.data.local.TradeEntity
+import com.tradedharma.app.domain.model.InstrumentType
 import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
+
+fun TradeEntity.displaySymbol(): String = buildString {
+    append(symbol)
+    optionType?.let { append(" • ").append(it.name) }
+    if (instrumentType == InstrumentType.OPTIONS && strikePrice != null) {
+        append(" • ")
+        append(NumberFormat.getNumberInstance(Locale.US).apply { maximumFractionDigits = 4 }.format(strikePrice))
+    }
+}
 
 fun money(value: Double): String {
     val sign = if (value < 0) "-" else "+"

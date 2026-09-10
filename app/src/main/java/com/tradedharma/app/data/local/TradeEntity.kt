@@ -34,7 +34,8 @@ data class TradeEntity(
     val initialRisk: Double? = null,
     val plannedReward: Double? = null,
     val plannedRr: Double? = null,
-    val actualRMultiple: Double? = null
+    val actualRMultiple: Double? = null,
+    val tradeDate: String? = null
 ) {
     fun tags(): List<String> = tagsCsv.split(',').map { it.trim() }.filter { it.isNotEmpty() }
 }

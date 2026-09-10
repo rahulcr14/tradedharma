@@ -90,6 +90,7 @@ fun AddTradeScreen(
     var tags by rememberSaveable { mutableStateOf("") }
     var notes by rememberSaveable { mutableStateOf("") }
     var screenshotPath by rememberSaveable { mutableStateOf<String?>(null) }
+    var tradeDate by rememberSaveable { mutableStateOf(LocalDate.now().toString()) }
     var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(existing) {
@@ -116,6 +117,7 @@ fun AddTradeScreen(
                 tags = t.tagsCsv
                 notes = t.notes
                 screenshotPath = t.screenshotPath
+                tradeDate = t.tradeDate ?: Instant.ofEpochMilli(t.openedAtEpochMs).atZone(ZoneId.systemDefault()).toLocalDate().toString()
                 loaded = true
             }
         }
@@ -125,6 +127,7 @@ fun AddTradeScreen(
     var showExchangePicker by remember { mutableStateOf(false) }
     var showLotSizePicker by remember { mutableStateOf(false) }
     var showExpiryPicker by remember { mutableStateOf(false) }
+    var showTradeDatePicker by remember { mutableStateOf(false) }
     var showCustomSymbol by remember { mutableStateOf(false) }
     var showCustomExchange by remember { mutableStateOf(false) }
     var showCustomLotSize by remember { mutableStateOf(false) }
@@ -169,6 +172,14 @@ fun AddTradeScreen(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item {
+                SelectorField(
+                    label = "Trade Date",
+                    value = expiryDisplay(tradeDate),
+                    onClick = { showTradeDatePicker = true },
+                    trailingIcon = Icons.Default.CalendarMonth
+                )
+            }
             item {
                 Text("Instrument", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
@@ -309,6 +320,7 @@ fun AddTradeScreen(
                                     expiryDate = if (instrument == InstrumentType.OPTIONS) expiry.ifBlank { null } else null,
                                     lotSize = if (instrument == InstrumentType.OPTIONS) effectiveLotSize else null,
                                     screenshotPath = screenshotPath,
+                                    tradeDate = tradeDate,
                                     openedAtEpochMs = existing?.openedAtEpochMs ?: System.currentTimeMillis(),
                                     closedAtEpochMs = System.currentTimeMillis(),
                                     grossPnl = calc.grossPnl,
@@ -392,6 +404,21 @@ fun AddTradeScreen(
                 }) { Text("Done") }
             },
             dismissButton = { TextButton(onClick = { showExpiryPicker = false }) { Text("Cancel") } }
+        ) { DatePicker(state = state) }
+    }
+
+    if (showTradeDatePicker) {
+        val initial = runCatching { LocalDate.parse(tradeDate) }.getOrElse { LocalDate.now() }
+        val state = rememberDatePickerState(initialSelectedDateMillis = initial.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli())
+        DatePickerDialog(
+            onDismissRequest = { showTradeDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    state.selectedDateMillis?.let { tradeDate = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString() }
+                    showTradeDatePicker = false
+                }) { Text("Done") }
+            },
+            dismissButton = { TextButton(onClick = { showTradeDatePicker = false }) { Text("Cancel") } }
         ) { DatePicker(state = state) }
     }
 

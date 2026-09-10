@@ -42,9 +42,16 @@ object DatabaseProvider {
         }
     }
 
+    private val MIGRATION_3_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE trades ADD COLUMN tradeDate TEXT")
+        }
+    }
+
     fun get(context: Context): TradeDatabase = instance ?: synchronized(this) {
         instance ?: Room.databaseBuilder(context.applicationContext, TradeDatabase::class.java, "tradelog.db")
             .addMigrations(MIGRATION_2_3)
+            .addMigrations(MIGRATION_3_4)
             .build()
             .also { instance = it }
     }

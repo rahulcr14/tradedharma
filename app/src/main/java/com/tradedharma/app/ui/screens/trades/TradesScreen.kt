@@ -18,6 +18,7 @@ import com.tradedharma.app.domain.model.InstrumentType
 import com.tradedharma.app.domain.repository.TradeRepository
 import com.tradedharma.app.ui.components.EmptyState
 import com.tradedharma.app.ui.components.money
+import com.tradedharma.app.ui.components.displaySymbol
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,7 +67,7 @@ private fun TradeRow(trade: TradeEntity, onClick: (Long) -> Unit) {
     Card(Modifier.fillMaxWidth().clickable { onClick(trade.id) }) {
         Row(Modifier.padding(14.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text("${trade.symbol} ${trade.optionType?.name.orEmpty().let { if (it.isBlank()) "" else "• $it" }}", style = MaterialTheme.typography.titleMedium)
+                Text(trade.displaySymbol(), style = MaterialTheme.typography.titleMedium)
                 Text("${trade.instrumentType.name} • ${trade.direction.name} • qty ${trade.quantity}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Text(money(trade.netPnl), color = if (trade.netPnl >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleMedium)

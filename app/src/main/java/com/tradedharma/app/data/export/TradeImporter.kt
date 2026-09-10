@@ -33,6 +33,7 @@ object TradeImporter {
                 stopLoss = value(r, "stopLoss").toDoubleOrNull(), target = value(r, "target").toDoubleOrNull(), charges = value(r, "charges").toDoubleOrNull() ?: 0.0,
                 strategy = value(r, "strategy").ifBlank { null }, tagsCsv = value(r, "tags"), notes = value(r, "notes"),
                 optionType = value(r, "optionType").takeIf { it.isNotBlank() }?.let { OptionType.valueOf(it) }, strikePrice = value(r, "strikePrice").toDoubleOrNull(), expiryDate = value(r, "expiryDate").ifBlank { null }, lotSize = value(r, "lotSize").toDoubleOrNull(),
+                tradeDate = value(r, "tradeDate").ifBlank { null },
                 openedAtEpochMs = value(r, "openedAtEpochMs").toLongOrNull() ?: System.currentTimeMillis(), closedAtEpochMs = value(r, "closedAtEpochMs").toLongOrNull(),
                 grossPnl = value(r, "grossPnl").toDouble(), netPnl = value(r, "netPnl").toDouble(), initialRisk = value(r, "initialRisk").toDoubleOrNull(), plannedReward = value(r, "plannedReward").toDoubleOrNull(), plannedRr = value(r, "plannedRr").toDoubleOrNull(), actualRMultiple = value(r, "actualRMultiple").toDoubleOrNull(), screenshotPath = value(r, "screenshotPath").ifBlank { null }
             )
@@ -48,6 +49,7 @@ object TradeImporter {
         strategy = o.optString("strategy").ifBlank { null }, tagsCsv = o.optString("tagsCsv"), notes = o.optString("notes"),
         optionType = o.optString("optionType").takeIf { it.isNotBlank() && it != "null" }?.let { OptionType.valueOf(it) },
         strikePrice = optNullableDouble(o, "strikePrice"), expiryDate = o.optString("expiryDate").ifBlank { null }, lotSize = optNullableDouble(o, "lotSize"),
+        tradeDate = o.optString("tradeDate").ifBlank { null },
         openedAtEpochMs = o.optLong("openedAtEpochMs", System.currentTimeMillis()), closedAtEpochMs = o.optLong("closedAtEpochMs", 0).takeIf { it > 0 },
         grossPnl = o.optDouble("grossPnl", 0.0), netPnl = o.optDouble("netPnl", 0.0), initialRisk = optNullableDouble(o, "initialRisk"), plannedReward = optNullableDouble(o, "plannedReward"), plannedRr = optNullableDouble(o, "plannedRr"), actualRMultiple = optNullableDouble(o, "actualRMultiple"), screenshotPath = o.optString("screenshotPath").ifBlank { null }
     )

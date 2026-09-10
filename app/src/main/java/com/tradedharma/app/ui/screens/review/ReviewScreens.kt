@@ -17,6 +17,7 @@ import com.tradedharma.app.domain.repository.TradeRepository
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +51,13 @@ private fun ReviewEditor(repository: TradeRepository, title: String, onBack: () 
         if (weekly) add(Calendar.DAY_OF_YEAR, 7) else add(Calendar.DAY_OF_YEAR, 1)
         set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
     }.timeInMillis
-    val periodTrades = trades.filter { (it.closedAtEpochMs ?: it.openedAtEpochMs) in start until end }
+    val startDate = Date(start).toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate()
+    val endDate = Date(end).toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate()
+    val periodTrades = trades.filter { trade ->
+        val date = trade.tradeDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+            ?: Date(trade.openedAtEpochMs).toInstant().atZone(TimeZone.getDefault().toZoneId()).toLocalDate()
+        date >= startDate && date < endDate
+    }
     val key = SimpleDateFormat(if (weekly) "yyyy-'W'ww" else "yyyy-MM-dd", Locale.getDefault()).format(Date())
     var rating by remember { mutableStateOf(ReviewRating.PARTIAL) }
     var reflection by remember { mutableStateOf("") }
