@@ -67,8 +67,14 @@ private fun TradeRow(trade: TradeEntity, onClick: (Long) -> Unit) {
     Card(Modifier.fillMaxWidth().clickable { onClick(trade.id) }) {
         Row(Modifier.padding(14.dp).fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(trade.displaySymbol(), style = MaterialTheme.typography.titleMedium)
-                Text("${trade.instrumentType.name} • ${trade.direction.name} • qty ${trade.quantity}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(trade.displaySymbol(), style = MaterialTheme.typography.titleMedium, maxLines = 1)
+                val category = if (trade.instrumentType == InstrumentType.FUTURES || trade.instrumentType == InstrumentType.OPTIONS) {
+                    "F&O"
+                } else {
+                    trade.instrumentType.name
+                }
+                val quantity = if (trade.quantity % 1.0 == 0.0) trade.quantity.toLong().toString() else trade.quantity.toString()
+                Text("$category • ${trade.direction.name} • Qty $quantity", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             }
             Text(money(trade.netPnl), color = if (trade.netPnl >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error, style = MaterialTheme.typography.titleMedium)
         }

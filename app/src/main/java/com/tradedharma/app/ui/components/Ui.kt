@@ -13,10 +13,14 @@ import kotlin.math.abs
 
 fun TradeEntity.displaySymbol(): String = buildString {
     append(symbol)
-    optionType?.let { append(" • ").append(it.name) }
-    if (instrumentType == InstrumentType.OPTIONS && strikePrice != null) {
-        append(" • ")
-        append(NumberFormat.getNumberInstance(Locale.US).apply { maximumFractionDigits = 4 }.format(strikePrice))
+    if (instrumentType == InstrumentType.OPTIONS || instrumentType == InstrumentType.FUTURES) {
+        strikePrice?.let {
+            append(" • ")
+            append(NumberFormat.getNumberInstance(Locale("en", "IN")).apply { maximumFractionDigits = 4 }.format(it))
+        }
+    }
+    if (instrumentType == InstrumentType.OPTIONS) {
+        optionType?.let { append(" • ").append(if (it.name == "CALL") "CE" else "PE") }
     }
 }
 
