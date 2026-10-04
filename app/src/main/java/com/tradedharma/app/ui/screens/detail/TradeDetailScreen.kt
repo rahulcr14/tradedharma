@@ -41,7 +41,18 @@ fun TradeDetailScreen(repository: TradeRepository, id: Long, onEdit: () -> Unit,
                 Text(t.displaySymbol(), style = MaterialTheme.typography.headlineSmall)
                 val selectedDate = t.tradeDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
                     ?: Date(t.openedAtEpochMs).toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate()
-                Text("${selectedDate.format(DETAIL_DATE)} • ${t.direction.name}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val category = if (t.instrumentType == com.tradedharma.app.domain.model.InstrumentType.FUTURES || t.instrumentType == com.tradedharma.app.domain.model.InstrumentType.OPTIONS) {
+                    "F&O"
+                } else {
+                    t.instrumentType.name
+                }
+                val quantity = if (t.quantity % 1.0 == 0.0) t.quantity.toLong().toString() else t.quantity.toString()
+                Text("$category • ${t.direction.name} • Qty $quantity", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Trade Date: ${selectedDate.format(DETAIL_DATE)}")
+                if ((t.instrumentType == com.tradedharma.app.domain.model.InstrumentType.FUTURES || t.instrumentType == com.tradedharma.app.domain.model.InstrumentType.OPTIONS) && !t.expiryDate.isNullOrBlank()) {
+                    val expiry = runCatching { LocalDate.parse(t.expiryDate) }.getOrNull()
+                    Text("Expiry: ${expiry?.format(DETAIL_DATE) ?: t.expiryDate}")
+                }
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Stat("Entry", "₹%.2f".format(t.entryPrice)); Stat("Exit", "₹%.2f".format(t.exitPrice)); Stat("Qty", "%.2f".format(t.quantity))
                 }

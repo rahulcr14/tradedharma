@@ -31,11 +31,42 @@ jobs:
       - name: Run unit tests
         run: ./gradlew test
 
-      - name: Build debug APK
-        run: ./gradlew assembleDebug
+      - name: Build and verify signed release APK
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_SIGNING_CERT_SHA256: ${{ vars.ANDROID_SIGNING_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          export ANDROID_HOME="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          keystore_path="$(mktemp "$RUNNER_TEMP/tradedharma-release-XXXXXX")"
+          trap 'rm -f "$keystore_path"' EXIT
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore_path"
+          export ANDROID_KEYSTORE_PATH="$keystore_path"
 
-      - name: Prepare release asset
-        run: cp app/build/outputs/apk/debug/app-debug.apk TradeDharma.apk
+          ./gradlew assembleRelease
+
+          apk="app/build/outputs/apk/release/app-release.apk"
+          test -f "$apk"
+          aapt="$ANDROID_HOME/build-tools/37.0.0/aapt"
+          apksigner="$ANDROID_HOME/build-tools/37.0.0/apksigner"
+          package_info="$("$aapt" dump badging "$apk")"
+          printf '%s\n' "$package_info" | grep -Fq "package: name='com.tradedharma.app'"
+
+          signer_info="$("$apksigner" verify --verbose --print-certs "$apk")"
+          actual_fingerprint="$(printf '%s\n' "$signer_info" | awk '/^(Signer #[0-9]+ certificate SHA-256 digest: |V[0-9]+(\.[0-9]+)? Signer: certificate SHA-256 digest: )/ { digest=$0; sub(/^.*certificate SHA-256 digest: /, "", digest); gsub(/[[:space:]:]/, "", digest); digest=toupper(digest); if (length(digest) != 64 || digest ~ /[^0-9A-F]/) invalid=1; count++; fingerprint=digest } END { if (count != 1 || invalid) exit 1; print fingerprint }')"
+          expected_fingerprint="$(printf '%s' "$ANDROID_SIGNING_CERT_SHA256" | tr -d '[:space:]:' | tr '[:lower:]' '[:upper:]')"
+          test -n "$actual_fingerprint"
+          test -n "$expected_fingerprint"
+          if [ "$actual_fingerprint" != "$expected_fingerprint" ]; then
+            printf '%s\n' "Release APK certificate fingerprint does not match ANDROID_SIGNING_CERT_SHA256."
+            exit 1
+          fi
+
+          cp "$apk" TradeDharma.apk
 
       - name: Create GitHub Release
         env:

@@ -43,6 +43,7 @@ import java.io.FileOutputStream
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -85,7 +86,7 @@ fun AddTradeScreen(
     var exit by rememberSaveable { mutableStateOf("") }
     var stopLoss by rememberSaveable { mutableStateOf("") }
     var target by rememberSaveable { mutableStateOf("") }
-    var charges by rememberSaveable { mutableStateOf("0") }
+    var charges by rememberSaveable { mutableStateOf("") }
     var strategy by rememberSaveable { mutableStateOf("") }
     var tags by rememberSaveable { mutableStateOf("") }
     var notes by rememberSaveable { mutableStateOf("") }
@@ -105,14 +106,14 @@ fun AddTradeScreen(
                 expiry = normalizeExpiry(t.expiryDate.orEmpty())
                 lotSizeText = t.lotSize?.formatNumber().orEmpty()
                 quantityText = t.quantity.formatNumber()
-                lotsText = if (t.instrumentType == InstrumentType.OPTIONS && t.lotSize != null && t.lotSize > 0) {
+                lotsText = if (t.instrumentType.isFno() && t.lotSize != null && t.lotSize > 0) {
                     (t.quantity / t.lotSize).formatNumber()
                 } else t.quantity.formatNumber()
                 entry = t.entryPrice.formatNumber()
                 exit = t.exitPrice.formatNumber()
                 stopLoss = t.stopLoss?.formatNumber().orEmpty()
                 target = t.target?.formatNumber().orEmpty()
-                charges = t.charges.formatNumber()
+                charges = if (t.charges == 0.0) "" else t.charges.formatNumber()
                 strategy = t.strategy.orEmpty()
                 tags = t.tagsCsv
                 notes = t.notes
@@ -134,7 +135,7 @@ fun AddTradeScreen(
 
     val effectiveLotSize = lotSizeText.toDoubleOrNull()
     val effectiveLots = lotsText.toDoubleOrNull()
-    val totalQuantity = if (instrument == InstrumentType.OPTIONS && effectiveLotSize != null && effectiveLots != null) {
+    val totalQuantity = if (instrument.isFno() && effectiveLotSize != null && effectiveLots != null) {
         effectiveLotSize * effectiveLots
     } else quantityText.toDoubleOrNull()
 
@@ -185,6 +186,9 @@ fun AddTradeScreen(
                 Spacer(Modifier.height(8.dp))
                 InstrumentSelector(instrument) { instrument = it }
             }
+            if (instrument.isFno()) {
+                item { DerivativeTypeSelector(instrument) { instrument = it } }
+            }
             item {
                 SelectorField(
                     label = "Symbol",
@@ -201,8 +205,10 @@ fun AddTradeScreen(
             }
             item { BuySellSelector(direction) { direction = it } }
 
-            if (instrument == InstrumentType.OPTIONS) {
-                item { CallPutSelector(optionType) { optionType = it } }
+            if (instrument.isFno()) {
+                if (instrument == InstrumentType.OPTIONS) {
+                    item { CallPutSelector(optionType) { optionType = it } }
+                }
                 item {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                         NumericField("Strike Price", strike, { strike = it }, Modifier.weight(1f))
@@ -224,11 +230,11 @@ fun AddTradeScreen(
                             modifier = Modifier.weight(1f)
                         )
                         NumericField(
-                            "Lots / Quantity",
-                            lotsText,
-                            { lotsText = it },
+                            if (effectiveLotSize == null) "Quantity" else "Lots / Quantity",
+                            if (effectiveLotSize == null) quantityText else lotsText,
+                            { if (effectiveLotSize == null) quantityText = it else lotsText = it },
                             Modifier.weight(1f),
-                            supporting = totalQuantity?.let { "Total quantity: ${it.formatNumber()}" }
+                            supporting = if (effectiveLotSize == null) null else totalQuantity?.let { "Total quantity: ${it.formatNumber()}" }
                         )
                     }
                 }
@@ -279,6 +285,7 @@ fun AddTradeScreen(
                 }
             }
             error?.let { msg -> item { Text(msg, color = MaterialTheme.colorScheme.error) } }
+            item { OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Cancel") } }
             item {
                 Button(
                     enabled = tradeId == null || existing != null,
@@ -290,6 +297,10 @@ fun AddTradeScreen(
                                 require(exchange.isNotBlank()) { "Exchange is required" }
                                 val quantity = if (instrument == InstrumentType.OPTIONS) {
                                     require(effectiveLotSize != null && effectiveLotSize > 0) { "Select a lot size" }
+                                    require(effectiveLots != null && effectiveLots > 0) { "Lots must be greater than zero" }
+                                    effectiveLotSize * effectiveLots
+                                } else if (instrument == InstrumentType.FUTURES && effectiveLotSize != null) {
+                                    require(effectiveLotSize > 0) { "Select a valid lot size" }
                                     require(effectiveLots != null && effectiveLots > 0) { "Lots must be greater than zero" }
                                     effectiveLotSize * effectiveLots
                                 } else {
@@ -316,9 +327,9 @@ fun AddTradeScreen(
                                     tagsCsv = tags,
                                     notes = notes,
                                     optionType = if (instrument == InstrumentType.OPTIONS) optionType else null,
-                                    strikePrice = if (instrument == InstrumentType.OPTIONS) strike.toDoubleOrNull() else null,
-                                    expiryDate = if (instrument == InstrumentType.OPTIONS) expiry.ifBlank { null } else null,
-                                    lotSize = if (instrument == InstrumentType.OPTIONS) effectiveLotSize else null,
+                                    strikePrice = if (instrument.isFno()) strike.toDoubleOrNull() else null,
+                                    expiryDate = if (instrument.isFno()) expiry.ifBlank { null } else null,
+                                    lotSize = if (instrument.isFno()) effectiveLotSize else null,
                                     screenshotPath = screenshotPath,
                                     tradeDate = tradeDate,
                                     openedAtEpochMs = existing?.openedAtEpochMs ?: System.currentTimeMillis(),
@@ -340,7 +351,6 @@ fun AddTradeScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) { Text(if (tradeId == null) "Save Trade" else "Save Changes") }
             }
-            item { OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) { Text("Cancel") } }
         }
     }
 
@@ -394,12 +404,12 @@ fun AddTradeScreen(
 
     if (showExpiryPicker) {
         val initial = runCatching { LocalDate.parse(expiry) }.getOrElse { LocalDate.now() }
-        val state = rememberDatePickerState(initialSelectedDateMillis = initial.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli())
+        val state = rememberDatePickerState(initialSelectedDateMillis = initial.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
         DatePickerDialog(
             onDismissRequest = { showExpiryPicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    state.selectedDateMillis?.let { expiry = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString() }
+                    state.selectedDateMillis?.let { expiry = Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString() }
                     showExpiryPicker = false
                 }) { Text("Done") }
             },
@@ -409,12 +419,12 @@ fun AddTradeScreen(
 
     if (showTradeDatePicker) {
         val initial = runCatching { LocalDate.parse(tradeDate) }.getOrElse { LocalDate.now() }
-        val state = rememberDatePickerState(initialSelectedDateMillis = initial.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli())
+        val state = rememberDatePickerState(initialSelectedDateMillis = initial.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
         DatePickerDialog(
             onDismissRequest = { showTradeDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    state.selectedDateMillis?.let { tradeDate = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate().toString() }
+                    state.selectedDateMillis?.let { tradeDate = Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate().toString() }
                     showTradeDatePicker = false
                 }) { Text("Done") }
             },
@@ -474,13 +484,36 @@ private fun TwoColumn(content: @Composable RowScope.() -> Unit) {
 
 @Composable
 private fun InstrumentSelector(value: InstrumentType, onChange: (InstrumentType) -> Unit) {
+    val choices = listOf(
+        InstrumentType.EQUITY to "Equity",
+        InstrumentType.OPTIONS to "F&O",
+        InstrumentType.OTHER to "Other"
+    )
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        InstrumentType.values().forEachIndexed { index, type ->
+        choices.forEachIndexed { index, (type, label) ->
+            val selected = if (type == InstrumentType.OPTIONS) value.isFno() else value == type
             SegmentedButton(
-                selected = value == type,
-                onClick = { onChange(type) },
-                shape = SegmentedButtonDefaults.itemShape(index, InstrumentType.values().size)
-            ) { Text(type.label()) }
+                selected = selected,
+                onClick = { if (type != InstrumentType.OPTIONS || !value.isFno()) onChange(type) },
+                shape = SegmentedButtonDefaults.itemShape(index, choices.size)
+            ) { Text(label) }
+        }
+    }
+}
+
+@Composable
+private fun DerivativeTypeSelector(value: InstrumentType, onChange: (InstrumentType) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        SelectorField(
+            label = "F&O Type",
+            value = if (value == InstrumentType.OPTIONS) "Options" else "Futures",
+            onClick = { expanded = true },
+            trailingIcon = Icons.Default.ExpandMore
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(text = { Text("Futures") }, onClick = { onChange(InstrumentType.FUTURES); expanded = false })
+            DropdownMenuItem(text = { Text("Options") }, onClick = { onChange(InstrumentType.OPTIONS); expanded = false })
         }
     }
 }
@@ -509,8 +542,8 @@ private fun DirectionButton(label: String, selected: Boolean, color: androidx.co
 @Composable
 private fun CallPutSelector(optionType: OptionType, onChange: (OptionType) -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(selected = optionType == OptionType.CALL, onClick = { onChange(OptionType.CALL) }, label = { Text("Call") })
-        FilterChip(selected = optionType == OptionType.PUT, onClick = { onChange(OptionType.PUT) }, label = { Text("Put") })
+        FilterChip(selected = optionType == OptionType.CALL, onClick = { onChange(OptionType.CALL) }, label = { Text("CE") })
+        FilterChip(selected = optionType == OptionType.PUT, onClick = { onChange(OptionType.PUT) }, label = { Text("PE") })
     }
 }
 
@@ -741,6 +774,7 @@ private fun CustomLotSizeDialog(onDismiss: () -> Unit, onAdd: (Double) -> Unit) 
     )
 }
 
+private fun InstrumentType.isFno(): Boolean = this == InstrumentType.FUTURES || this == InstrumentType.OPTIONS
 private fun InstrumentType.label(): String = name.lowercase(Locale.ENGLISH).replaceFirstChar { it.uppercase(Locale.ENGLISH) }
 private fun Double.formatNumber(): String = if (this % 1.0 == 0.0) this.toLong().toString() else "%.4f".format(Locale.ENGLISH, this).trimEnd('0').trimEnd('.')
 private fun normalizeExpiry(value: String): String = runCatching { LocalDate.parse(value).toString() }.getOrElse { runCatching { LocalDate.parse(value, DISPLAY_DATE).toString() }.getOrDefault("") }

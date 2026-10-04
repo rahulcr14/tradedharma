@@ -1,6 +1,9 @@
 package com.tradedharma.app.domain.analytics
 
 import com.tradedharma.app.data.local.TradeEntity
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlin.math.max
 
 object Analytics {
@@ -30,7 +33,7 @@ object Analytics {
         var equity = 0.0
         var peak = 0.0
         var maxDd = 0.0
-        trades.sortedBy { it.closedAtEpochMs ?: it.openedAtEpochMs }.forEach {
+        chronological(trades).forEach {
             equity += it.netPnl
             peak = max(peak, equity)
             maxDd = max(maxDd, peak - equity)
@@ -40,7 +43,7 @@ object Analytics {
 
     fun equityPoints(trades: List<TradeEntity>): List<Double> {
         var running = 0.0
-        return trades.sortedBy { it.closedAtEpochMs ?: it.openedAtEpochMs }.map {
+        return chronological(trades).map {
             running += it.netPnl
             running
         }
@@ -60,4 +63,12 @@ object Analytics {
     }
 
     private fun List<Double>.averageOrNull(): Double? = if (isEmpty()) null else average()
+
+    private fun chronological(trades: List<TradeEntity>) = trades.sortedWith(
+        compareBy<TradeEntity>({ tradeDate(it) }, { it.closedAtEpochMs ?: it.openedAtEpochMs })
+    )
+
+    private fun tradeDate(trade: TradeEntity): LocalDate = trade.tradeDate
+        ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+        ?: Instant.ofEpochMilli(trade.openedAtEpochMs).atZone(ZoneId.systemDefault()).toLocalDate()
 }

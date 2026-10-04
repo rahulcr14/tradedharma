@@ -6,6 +6,14 @@ plugins {
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+val releaseSigningEnvironment = listOf(
+    "ANDROID_KEYSTORE_PATH",
+    "ANDROID_KEYSTORE_PASSWORD",
+    "ANDROID_KEY_ALIAS",
+    "ANDROID_KEY_PASSWORD"
+)
+val releaseSigningValues = releaseSigningEnvironment.associateWith { providers.environmentVariable(it).orNull }
+
 android {
     namespace = "com.tradedharma.app"
     compileSdk = 37
@@ -13,13 +21,23 @@ android {
         applicationId = "com.tradedharma.app"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
+    signingConfigs {
+        create("release") {
+            storeFile = releaseSigningValues["ANDROID_KEYSTORE_PATH"]?.let { rootProject.file(it) }
+            storePassword = releaseSigningValues["ANDROID_KEYSTORE_PASSWORD"]
+            keyAlias = releaseSigningValues["ANDROID_KEY_ALIAS"]
+            keyPassword = releaseSigningValues["ANDROID_KEY_PASSWORD"]
+            storeType = "JKS"
+        }
+    }
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -30,6 +48,26 @@ android {
     }
     buildFeatures { compose = true }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+}
+
+gradle.taskGraph.whenReady {
+    val releaseArtifactRequested = allTasks.any { task ->
+        task.project == project && (
+            task.name == "assembleRelease" ||
+                task.name.startsWith("packageRelease") ||
+                task.name.startsWith("bundleRelease")
+            )
+    }
+    if (releaseArtifactRequested) {
+        val missing = releaseSigningEnvironment.filter { releaseSigningValues[it].isNullOrBlank() }
+        if (missing.isNotEmpty()) {
+            throw GradleException("Release signing requires environment variables: ${missing.joinToString()}")
+        }
+        val keystorePath = requireNotNull(releaseSigningValues["ANDROID_KEYSTORE_PATH"])
+        if (!rootProject.file(keystorePath).isFile) {
+            throw GradleException("ANDROID_KEYSTORE_PATH must point to an existing keystore file.")
+        }
+    }
 }
 
 kotlin {
